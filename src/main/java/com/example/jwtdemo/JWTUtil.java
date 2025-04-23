@@ -10,7 +10,7 @@ import java.util.Date;
 
 @Component
 public class JWTUtil {
-    private static final String SECRET_KEY = "secret-key";
+    private static final String SECRET_KEY = "QWERTYUIOPASDFGHJKLZXCVBNMQWERTYU";
     private static final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
 
     String generateToken(String username, long expiryMinutes){
