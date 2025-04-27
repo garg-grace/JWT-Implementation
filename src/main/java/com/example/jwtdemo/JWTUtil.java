@@ -1,5 +1,6 @@
 package com.example.jwtdemo;
 
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -22,4 +23,19 @@ public class JWTUtil {
                 .compact();
     }
 
+    public String validateAndExtractUsername(String token) {
+        try{
+            String username =  Jwts.parser()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getSubject();
+//            System.out.println("username-----"+username);
+            return username;
+        } catch (JwtException e) {
+//            System.out.println("Exception--->"+e);
+            return null;
+        }
+    }
 }

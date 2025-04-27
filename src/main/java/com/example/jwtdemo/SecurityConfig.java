@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -51,6 +50,11 @@ public class SecurityConfig {
     }
 
     @Bean
+    public JwtAuthenticationProvider jwtAuthenticationProvider(){
+        return new JwtAuthenticationProvider(jwtUtil,userDetailsService);
+    }
+
+    @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
@@ -66,6 +70,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager,JWTUtil jwtUtil) throws Exception{
         JWTAuthenticationFilter jwtAuthFilter = new JWTAuthenticationFilter(authenticationManager,jwtUtil);
+        JwtValidationFilter jwtValidationFilter = new JwtValidationFilter(authenticationManager);
 
         http.authorizeHttpRequests(auth->auth
                 .requestMatchers("/user/register").permitAll()
@@ -73,14 +78,16 @@ public class SecurityConfig {
                 .sessionManagement(session->session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(csrf->csrf.disable())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(jwtValidationFilter,JWTAuthenticationFilter.class);
         return http.build();
     }
 
     @Bean
     public AuthenticationManager authenticationManager(){
         return new ProviderManager(Arrays.asList(
-                daoAuthenticationProvider()
+                daoAuthenticationProvider(),
+                jwtAuthenticationProvider()
         ));
     }
 
