@@ -3,6 +3,7 @@ package com.example.jwtdemo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -37,6 +38,15 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         if(authResult.isAuthenticated()){
             String token = jwtUtil.generateToken(authResult.getName(), 15);
             response.setHeader("Authorization","Bearer "+token);
+
+            String refreshToken = jwtUtil.generateToken(authResult.getName(),7*24*60); //7days
+
+            Cookie refreshCookie = new Cookie("refreshToken",refreshToken);
+            refreshCookie.setHttpOnly(true);
+            refreshCookie.setSecure(true);
+            refreshCookie.setPath("/refressh-token");
+            refreshCookie.setMaxAge(7*24*60*60); //7 days expiry
+            response.addCookie(refreshCookie);
         }
 
     }

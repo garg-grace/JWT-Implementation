@@ -71,6 +71,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager,JWTUtil jwtUtil) throws Exception{
         JWTAuthenticationFilter jwtAuthFilter = new JWTAuthenticationFilter(authenticationManager,jwtUtil);
         JwtValidationFilter jwtValidationFilter = new JwtValidationFilter(authenticationManager);
+        JWTRefreshFilter jwtRefreshFilter = new JWTRefreshFilter(jwtUtil,authenticationManager);
 
         http.authorizeHttpRequests(auth->auth
                 .requestMatchers("/user/register").permitAll()
@@ -79,7 +80,8 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(csrf->csrf.disable())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(jwtValidationFilter,JWTAuthenticationFilter.class);
+                .addFilterAfter(jwtValidationFilter,JWTAuthenticationFilter.class)
+                .addFilterAfter(jwtRefreshFilter,JwtValidationFilter.class);
         return http.build();
     }
 
